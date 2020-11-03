@@ -1,5 +1,8 @@
 import os
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class Surveyor:
@@ -24,6 +27,7 @@ class Surveyor:
     def answering_surveys(self):
         driver = self.driver
         surveys = self.get_surveys()
+
         surveys[0].click()
 
         terms_and_conditions = driver.find_element_by_xpath('//*[@id="terminos"]')
@@ -38,7 +42,8 @@ class Surveyor:
         submit_survey_btn = driver.find_element_by_class_name('button__survey')
         submit_survey_btn.click()
 
-        confirm_btn = driver.find_element_by_class_name('swal-button-container')
+        wait = WebDriverWait(driver, 10)
+        confirm_btn = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'swal-button-container')))
         confirm_btn.click()
         self.answering_surveys()
 
@@ -49,8 +54,8 @@ class Surveyor:
         if not surveys_elements:
             print('[!] You do not have any survey.')
             self.__del__()
-
-        return surveys_elements
+        else:
+            return surveys_elements
 
     def __del__(self):
         self.driver.close()
