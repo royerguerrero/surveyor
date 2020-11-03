@@ -1,50 +1,63 @@
-import unittest, os
+import os
 from selenium import webdriver
 
-class Surveyor(unittest.TestCase):
 
-    def setUp(self):
+class Surveyor:
+    def __init__(self, email, password):
+        print('[!] Starting execution...')
         self.driver = webdriver.Chrome(executable_path='./chromedriver')
-        self.driver.get('http://3.86.213.150:8000/accounts/login/')
+        self.user_credentials = {'email': email, 'password': password}
 
-    def test_answer_all_surveys(self):
+        self.driver.get('http://34.228.175.56:8000/accounts/login/?next=/')
+
+    def login(self):
         driver = self.driver
-        email = os.environ.get('USER_MAIL')
-        password = os.environ.get('USER_PWD')
-        email_input = driver.find_element_by_name('username')
-        password_input = driver.find_element_by_name('password')
-        login_button = driver.find_element_by_xpath('//*[@id="login"]/button')
+        email_field = driver.find_element_by_name('username')
+        password_field = driver.find_element_by_name('password')
 
-        email_input.send_keys(email)
-        password_input.send_keys(password)
-        login_button.click()
+        email_field.send_keys(self.user_credentials['email'])
+        password_field.send_keys(self.user_credentials['password'])
 
-        surveys = driver.find_elements_by_class_name('card')
-        counter = 0
+        submit_btn = driver.find_element_by_xpath('//*[@id="login"]/button')
+        submit_btn.click()
 
-        while counter != len(surveys):
-            survey = driver.find_element_by_class_name('button__surveyall')
-            survey.click()
+    def answering_surveys(self):
+        driver = self.driver
+        surveys = self.get_surveys()
+        surveys[0].click()
 
-            terms = driver.find_element_by_class_name('radio__survey')
-            terms.click()
+        terms_and_conditions = driver.find_element_by_xpath('//*[@id="terminos"]')
+        terms_and_conditions.click()
 
-            questions = driver.find_elements_by_class_name('input__survey')
-            for question in questions:
-                options = question.find_elements_by_class_name('radio__survey')
-                options[1].click()
+        options = driver.find_elements_by_class_name('radio__survey')
+        for option in options:
+            value = option.get_attribute('value')
+            if value == 'no':
+                option.click()
 
-            send_survey = driver.find_element_by_class_name('button__survey')
-            send_survey.click()
+        submit_survey_btn = driver.find_element_by_class_name('button__survey')
+        submit_survey_btn.click()
 
-            confirm_btn = driver.find_element_by_class_name('swal-button--confirm')
-            confirm_btn.click()
+        confirm_btn = driver.find_element_by_class_name('swal-button-container')
+        confirm_btn.click()
+        self.answering_surveys()
 
-            counter += 1
+    def get_surveys(self):
+        driver = self.driver
+        surveys_elements = driver.find_elements_by_class_name('card')
+        
+        if not surveys_elements:
+            print('[!] You do not have any survey.')
+            self.__del__()
 
-    def tearDown(self):
+        return surveys_elements
+
+    def __del__(self):
         self.driver.close()
+        print('[!] Completed execution.')
 
 
-if __name__ == '__main__':
-    unittest.main()
+if __name__ == "__main__":
+    surveyor = Surveyor(email=os.environ.get('USER_MAIL'), password=os.environ.get('USER_PWD'))
+    surveyor.login()
+    surveyor.answering_surveys()
