@@ -1,4 +1,5 @@
 import os
+import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,6 +11,7 @@ class Surveyor:
         print('[!] Starting execution...')
         self.driver = webdriver.Chrome(executable_path='./chromedriver')
         self.user_credentials = {'email': email, 'password': password}
+        self.count_surveys = 0
 
         self.driver.get('http://34.228.175.56:8000/accounts/login/?next=/')
 
@@ -17,6 +19,10 @@ class Surveyor:
         driver = self.driver
         email_field = driver.find_element_by_name('username')
         password_field = driver.find_element_by_name('password')
+        if not self.user_credentials['email'] or not self.user_credentials['password']:
+            print('[!] Please provide a credential using ENV variables')
+            sys.exit(0)
+            self.__del__()
 
         email_field.send_keys(self.user_credentials['email'])
         password_field.send_keys(self.user_credentials['password'])
@@ -30,7 +36,8 @@ class Surveyor:
 
         surveys[0].click()
 
-        terms_and_conditions = driver.find_element_by_xpath('//*[@id="terminos"]')
+        terms_and_conditions = driver.find_element_by_xpath(
+            '//*[@id="terminos"]')
         terms_and_conditions.click()
 
         options = driver.find_elements_by_class_name('radio__survey')
@@ -43,26 +50,42 @@ class Surveyor:
         submit_survey_btn.click()
 
         wait = WebDriverWait(driver, 10)
-        confirm_btn = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'swal-button-container')))
+        confirm_btn = wait.until(EC.element_to_be_clickable(
+            (By.CLASS_NAME, 'swal-button-container')))
         confirm_btn.click()
         self.answering_surveys()
 
     def get_surveys(self):
         driver = self.driver
         surveys_elements = driver.find_elements_by_class_name('card')
-        
+
         if not surveys_elements:
-            print('[!] You do not have any survey.')
+            if self.count_surveys > 0:
+                print('[!] You do not more surveys.')
+            else:
+                print('[!] You do not have any survey.')
+            sys.exit(0)
             self.__del__()
         else:
+            print('[!] Answer new survey')
             return surveys_elements
 
     def __del__(self):
         self.driver.close()
-        print('[!] Completed execution.')
+        print(f'[!] Completed execution, number of answered surveys: {self.count_surveys}')
 
 
 if __name__ == "__main__":
-    surveyor = Surveyor(email=os.environ.get('USER_MAIL'), password=os.environ.get('USER_PWD'))
+    print("""
+   _____
+  / ___/__  ________   _____  __  ______  _____
+  \__ \/ / / / ___/ | / / _ \/ / / / __ \/ ___/
+ ___/ / /_/ / /   | |/ /  __/ /_/ / /_/ / /
+/____/\__,_/_/    |___/\___/\__, /\____/_/
+                           /____/
+        by @royerguerrero (github)
+    """)
+    surveyor = Surveyor(email=os.environ.get('USER_MAIL'),
+                        password=os.environ.get('USER_PWD'))
     surveyor.login()
     surveyor.answering_surveys()
