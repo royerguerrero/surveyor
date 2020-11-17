@@ -68,6 +68,7 @@ class Surveyor:
             self.__del__()
         else:
             print('[!] Answer new survey')
+            self.count_surveys += 1
             return surveys_elements
 
     def __del__(self):
