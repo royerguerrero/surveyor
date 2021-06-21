@@ -1,4 +1,3 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv,pycharm,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,venv,pycharm,vscode
 
@@ -265,5 +264,9 @@ pip-selfcheck.json
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+### credentials and chromedriver ###
+credentials.sh
+chromedriver
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,pycharm,vscode
